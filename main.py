@@ -40,7 +40,7 @@ class Student(pg.sprite.Sprite):
             self.rect.move_ip(1, -3)
         elif self.direction == "down" and self.rect.bottom < H and self.rect.top >H-300:
             self.rect.move_ip(2, 4)
-        
+
 class Umbrella(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
