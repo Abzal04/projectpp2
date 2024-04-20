@@ -61,6 +61,8 @@ class Student(pg.sprite.Sprite):
         self.move_timer=0
         self.images=0
         self.index=0
+        self.counter=0
+        self.delay=5
     def move(self):
         if pg.time.get_ticks() - self.move_timer > random.randint(2000,5000):
             self.direction=random.choice(["left",'right','up','down'])
@@ -92,8 +94,11 @@ class Student(pg.sprite.Sprite):
             if self.index==2:
                 self.index=0
             else:
-                self.index+=1
-            self.rect.move_ip(-2,1)
+                self.counter += 1
+                if self.counter >=self.delay:
+                    self.counter = 0
+                    self.index+=1
+                    self.rect.move_ip(-10,4)
         
         elif self.direction == "right":
             self.images=[]
@@ -105,16 +110,27 @@ class Student(pg.sprite.Sprite):
             if self.index==2:
                 self.index=0
             else:
-                self.index+=1
-            self.rect.move_ip(2,1)
+                self.counter += 1
+                if self.counter >=self.delay:
+                    self.counter = 0
+                    self.index+=1
+                    self.rect.move_ip(10,-4)
+
             
         elif self.direction == "up":
             self.image = student_img
-            self.rect.move_ip(1, -2)
+            self.counter+=1
+            if self.counter >= self.delay-2:
+                self.counter=0
+                self.rect.move_ip(1, -3)
             
         elif self.direction == "down":
+            self.counter +=1
             self.image = student_img
-            self.rect.move_ip(-1,2)
+            if self.counter >=self.delay-2:
+                self.counter = 0
+                self.rect.move_ip(-1,3)   
+
 S1=Student()
 
 
