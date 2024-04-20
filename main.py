@@ -12,12 +12,11 @@ pg.display.set_caption("Rain")
 clock=pg.time.Clock()
 
 student_img = pg.image.load("design/student with laptop.png")
-umbrella_img1 = pg.image.load("design/umbrella.png")
-umbrella_img=pg.transform.scale(umbrella_img1,(150,150))
-umbrella_img=pg.transform.rotate(umbrella_img,30)
+#student's back image ??
+
+umbrella_img=pg.transform.rotate(pg.transform.scale(pg.image.load("design/umbrella.png"),(150,150)),30)
 umbrella_rect=umbrella_img.get_rect()
 raindrop_img = pg.image.load("design/raindrop.png")
-
 class Raindrop(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -28,7 +27,6 @@ class Raindrop(pg.sprite.Sprite):
         self.speedy=random.randint(2,10)
         self.rect.x=random.randint(-5,W)
         self.rect.y=random.randint(-H,-5)
-    
     def update(self):
         if self.rect.bottom > H:
             self.speedx=3
@@ -51,10 +49,6 @@ class Umbrella(pg.sprite.Sprite):
         self.rect.center=(mouse_x,mouse_y)
     def move(self):
         pass
-    def collide_raindrops(self,rain_group):
-        collided_raindrop=pg.sprite.collideli(self,rain_group,True)
-        if collided_raindrop:##########################################################
-            rain_group.remove(collided_raindrop)
 
 class Student(pg.sprite.Sprite):
     def __init__(self):
@@ -62,18 +56,20 @@ class Student(pg.sprite.Sprite):
         self.image=student_img
         self.image=pg.transform.scale(self.image,(100,100))
         self.rect=self.image.get_rect()
-        self.rect.center=(x,y)
+        self.rect.center=[x,y]
         self.direction=None
         self.move_timer=0
+        self.images=0
+        self.index=0
     def move(self):
-        if pg.time.get_ticks()-self.move_timer>random.randint(2000,5000):
+        if pg.time.get_ticks() - self.move_timer > random.randint(2000,5000):
             self.direction=random.choice(["left",'right','up','down'])
             self.move_timer=pg.time.get_ticks()
 
         #Collision left
         if self.rect.centerx < 30:
             self.direction=random.choice(['right','up','down'])
-    
+            
         #Collision right
         if  self.rect.centerx > W-30:
             self.direction=random.choice(["left",'up','down'])
@@ -86,17 +82,41 @@ class Student(pg.sprite.Sprite):
         if self.rect.centery > H-30:
             self.direction=random.choice(["left",'right','up'])
 
-
         if self.direction=="left":
+            self.images=[]
+            for num in range(0,3):
+                img=pg.transform.flip((pg.image.load(f"design/right_walk/rigth-walk-frame-{num}.png").convert_alpha()),True,False)
+                img=pg.transform.scale(img,(100,100))
+                self.images.append(img)
+            self.image=self.images[self.index]
+            if self.index==2:
+                self.index=0
+            else:
+                self.index+=1
             self.rect.move_ip(-2,1)
-        elif self.direction=="right":
+        
+        elif self.direction == "right":
+            self.images=[]
+            for num in range(0,3):
+                img=pg.image.load(f"design/right_walk/rigth-walk-frame-{num}.png").convert_alpha()
+                img=pg.transform.scale(img,(100,100))
+                self.images.append(img)
+            self.image=self.images[self.index]
+            if self.index==2:
+                self.index=0
+            else:
+                self.index+=1
             self.rect.move_ip(2,1)
+            
         elif self.direction == "up":
+            self.image = student_img
             self.rect.move_ip(1, -2)
+            
         elif self.direction == "down":
-            self.rect.move_ip(1,2)
-
+            self.image = student_img
+            self.rect.move_ip(-1,2)
 S1=Student()
+
 
 while True:
     for event in pg.event.get():
@@ -117,6 +137,9 @@ while True:
     collided_rain = pg.sprite.spritecollide(U1,rain_group,dokill=False)
     for raindrop in collided_rain:
             rain_group.remove(raindrop)
+
+    #Collision of student with raindrop
+
 
 #cloud and ground
     pg.draw.rect(screen,(0,0,200),(10,0,W-20,100))
