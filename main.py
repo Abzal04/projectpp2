@@ -11,12 +11,12 @@ pg.display.set_caption("Rain")
 
 clock=pg.time.Clock()
 
-student_img = pg.image.load("student with laptop.png")
-umbrella_img1 = pg.image.load("umbrella.png")
+student_img = pg.image.load("design/student with laptop.png")
+umbrella_img1 = pg.image.load("design/umbrella.png")
 umbrella_img=pg.transform.scale(umbrella_img1,(150,150))
 umbrella_img=pg.transform.rotate(umbrella_img,30)
 umbrella_rect=umbrella_img.get_rect()
-raindrop_img = pg.image.load("raindrop.png")
+raindrop_img = pg.image.load("design/raindrop.png")
 
 
 class Student(pg.sprite.Sprite):
