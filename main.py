@@ -18,53 +18,6 @@ umbrella_img=pg.transform.rotate(umbrella_img,30)
 umbrella_rect=umbrella_img.get_rect()
 raindrop_img = pg.image.load("design/raindrop.png")
 
-
-class Student(pg.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image=student_img
-        self.image=pg.transform.scale(self.image,(70,100))
-        self.rect=self.image.get_rect()
-        self.rect.center=(x,y)
-        self.direction=None
-        self.move_timer=0
-    def move(self):
-        if pg.time.get_ticks()-self.move_timer>random.randint(2000,5000):
-            self.direction=random.choice(["left",'right','up','down'])
-            self.move_timer=pg.time.get_ticks()
-
-        #Collision left
-        if self.rect.centerx < 30:
-            self.direction=random.choice(['right','up','down'])
-        #Collision right
-        if  self.rect.centerx > W-30:
-            self.direction=random.choice(["left",'up','down'])
-        #Collision top
-        if self.rect.centery < H-310:
-            self.direction=random.choice(["left",'right','down'])
-        #Collision bottom
-        if self.rect.centery > H-30:
-            self.direction=random.choice(["left",'right','up'])
-
-        if self.direction=="left":
-            self.rect.move_ip(-2,1)
-        elif self.direction=="right":
-            self.rect.move_ip(2,1)
-        elif self.direction == "up":
-            self.rect.move_ip(1, -2)
-        elif self.direction == "down":
-            self.rect.move_ip(1,2)
-            
-
-class Umbrella(pg.sprite.Sprite):
-    def __init__(self):
-        super().__init__()
-        self.image=umbrella_img
-        self.rect=self.image.get_rect()
-        self.rect.center=(mouse_x,mouse_y)
-    def move(self):
-        pass
-
 class Raindrop(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
@@ -90,6 +43,59 @@ for i in range(100):
     new_raindrop=Raindrop()
     rain_group.add(new_raindrop)
 
+class Umbrella(pg.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image=umbrella_img
+        self.rect=self.image.get_rect()
+        self.rect.center=(mouse_x,mouse_y)
+    def move(self):
+        pass
+    def collide_raindrops(self,rain_group):
+        collided_raindrop=pg.sprite.collideli(self,rain_group,True)
+        if collided_raindrop:##########################################################
+            rain_group.remove(collided_raindrop)
+
+class Student(pg.sprite.Sprite):
+    def __init__(self):
+        super().__init__()
+        self.image=student_img
+        self.image=pg.transform.scale(self.image,(100,100))
+        self.rect=self.image.get_rect()
+        self.rect.center=(x,y)
+        self.direction=None
+        self.move_timer=0
+    def move(self):
+        if pg.time.get_ticks()-self.move_timer>random.randint(2000,5000):
+            self.direction=random.choice(["left",'right','up','down'])
+            self.move_timer=pg.time.get_ticks()
+
+        #Collision left
+        if self.rect.centerx < 30:
+            self.direction=random.choice(['right','up','down'])
+    
+        #Collision right
+        if  self.rect.centerx > W-30:
+            self.direction=random.choice(["left",'up','down'])
+
+        #Collision top
+        if self.rect.centery < H-310:
+            self.direction=random.choice(["left",'right','down'])
+ 
+        #Collision bottom
+        if self.rect.centery > H-30:
+            self.direction=random.choice(["left",'right','up'])
+
+
+        if self.direction=="left":
+            self.rect.move_ip(-2,1)
+        elif self.direction=="right":
+            self.rect.move_ip(2,1)
+        elif self.direction == "up":
+            self.rect.move_ip(1, -2)
+        elif self.direction == "down":
+            self.rect.move_ip(1,2)
+
 S1=Student()
 
 while True:
@@ -106,9 +112,15 @@ while True:
     rain_group.update()
     screen.fill((0,0,0))
     rain_group.draw(screen)
+
+    #Collision of umbrella with raindrops
+    collided_rain = pg.sprite.spritecollide(U1,rain_group,dokill=False)
+    for raindrop in collided_rain:
+            rain_group.remove(raindrop)
+
 #cloud and ground
     pg.draw.rect(screen,(0,0,200),(10,0,W-20,100))
-    pg.draw.rect(screen,(0,255,0),(0,H-300,W,300))
+    # pg.draw.rect(screen,(0,255,0),(0,H-300,W,300))
 
 
     for entity in all_sprites:
