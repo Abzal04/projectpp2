@@ -23,24 +23,38 @@ class Student(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image=student_img
-        self.image=pg.transform.scale(self.image,(50,70))
+        self.image=pg.transform.scale(self.image,(70,100))
         self.rect=self.image.get_rect()
         self.rect.center=(x,y)
         self.direction=None
         self.move_timer=0
     def move(self):
-        if pg.time.get_ticks()-self.move_timer>random.randint(1000,3000):
+        if pg.time.get_ticks()-self.move_timer>random.randint(2000,5000):
             self.direction=random.choice(["left",'right','up','down'])
             self.move_timer=pg.time.get_ticks()
 
-        if self.direction=="left" and self.rect.left> 0:
-            self.rect.move_ip(-3,1)
-        elif self.direction=="right" and self.rect.right < W:
-            self.rect.move_ip(3,2)
-        elif self.direction == "up" and self.rect.top > 0:
-            self.rect.move_ip(1, -3)
-        elif self.direction == "down" and self.rect.bottom < H and self.rect.top >H-300:
-            self.rect.move_ip(2, 4)
+        #Collision left
+        if self.rect.centerx < 30:
+            self.direction=random.choice(['right','up','down'])
+        #Collision right
+        if  self.rect.centerx > W-30:
+            self.direction=random.choice(["left",'up','down'])
+        #Collision top
+        if self.rect.centery < H-310:
+            self.direction=random.choice(["left",'right','down'])
+        #Collision bottom
+        if self.rect.centery > H-30:
+            self.direction=random.choice(["left",'right','up'])
+
+        if self.direction=="left":
+            self.rect.move_ip(-2,1)
+        elif self.direction=="right":
+            self.rect.move_ip(2,1)
+        elif self.direction == "up":
+            self.rect.move_ip(1, -2)
+        elif self.direction == "down":
+            self.rect.move_ip(1,2)
+            
 
 class Umbrella(pg.sprite.Sprite):
     def __init__(self):
@@ -55,7 +69,7 @@ class Raindrop(pg.sprite.Sprite):
     def __init__(self):
         super().__init__()
         self.image1=raindrop_img
-        self.image=pg.transform.scale(self.image1,(20,20))
+        self.image=pg.transform.scale(self.image1,(40,40))
         self.rect=self.image.get_rect()
         self.speedx=3
         self.speedy=random.randint(2,10)
