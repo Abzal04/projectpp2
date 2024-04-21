@@ -1,8 +1,8 @@
 import pygame as pg
-import random,time,sys
+import random,datetime,sys,time
 pg.init()
 
-W=1200
+W=1000
 H=750
 x,y=W//2,H-200
 
@@ -16,6 +16,27 @@ student_back_image=pg.image.load("design/backsprite.png")
 umbrella_img=pg.transform.rotate(pg.transform.scale(pg.image.load("design/umbrella1.png"),(150,150)),30)
 umbrella_rect=umbrella_img.get_rect()
 raindrop_img = pg.image.load("design/raindrop.png")
+bg=pg.image.load("design/background final.png")
+
+# Game Over Screen
+game_over_font = pg.font.SysFont("comicsansms",60)
+game_over_text = game_over_font.render("Game Over",True,(255,255,255))
+game_overRect = game_over_text.get_rect()
+game_overRect.center = ((W//2,H//2))
+
+# Win Screen
+win_font = pg.font.SysFont("comicsansms",60)
+win_font_text = win_font.render("You won !!!",True,(255,255,255))
+win_fontRect = win_font_text.get_rect()
+win_fontRect.center = ((W//2 , H//2))
+
+# For time Table
+start_time = datetime.datetime.now().replace(hour=0, minute=14, second=0, microsecond=0)
+end_time = start_time.replace(minute=15)
+current_time = start_time
+
+
+
 
 rain_group = pg.sprite.Group()
 rain_timer = pg.time.get_ticks()
@@ -77,7 +98,7 @@ class Student(pg.sprite.Sprite):
                 self.direction = "left"
 
             # Collision top
-            if self.rect.top <= H - 310:
+            if self.rect.top <= H - 240:
                 self.direction = "down"
 
             # Collision bottom
@@ -112,6 +133,7 @@ class Student(pg.sprite.Sprite):
             self.image=self.images[self.index]
             if self.index==2:
                 self.index=0
+            
             else:
                 self.counter += 1
                 if self.counter >=self.delay:
@@ -127,7 +149,7 @@ class Student(pg.sprite.Sprite):
             if self.counter >= self.delay - 2:
                 self.counter=0
                 self.rect.move_ip(0,random.randrange(-20,-5))
-                if self.rect.top < H-310:
+                if self.rect.top < H-240:
                     self.direction=random.choice(["left",'right','down'])
         # Movement down
         elif self.direction == "down":
@@ -161,9 +183,15 @@ while True:
         if event.type==pg.QUIT:
             pg.quit()
             sys.exit()
+    screen.blit(bg,(0,0))
 
     if not paused:                                                                              ###########
-        mouse_x,mouse_y=pg.mouse.get_pos()
+        while start_time <= end_time:
+            # print(current_time.strftime("%M:%S"))
+            start_time +=datetime.timedelta(seconds=1)
+        time_rect = pg.draw.rect(screen, (0,0,0), pg.Rect(W-300,30,200,100))
+        
+        mouse_x,mouse_y = pg.mouse.get_pos()
         U1=Umbrella()
     
         all_sprites=pg.sprite.Group()
@@ -180,7 +208,6 @@ while True:
             spawn_interval = random.randint(1000, 2000)  
         for raindrop in rain_group:
             raindrop.update()
-        screen.fill((0,0,0))
         rain_group.draw(screen)
 
         #Collision of umbrella with raindrops
@@ -188,26 +215,22 @@ while True:
         for raindrop in collided_rain:
             rain_group.remove(raindrop)
 
-    #cloud and ground
-        pg.draw.rect(screen,(0,0,200),(10,0,W-20,150))
-        pg.draw.rect(screen,(0,255,0),(0,H-200,W,200))
-
         for entity in all_sprites:
             screen.blit(entity.image,entity.rect)
             entity.move()
+
+        last_pos = (S1.rect.x,S1.rect.y)
     
         pg.display.flip()
         clock.tick(60)
     #Collision of student with raindrop
-    if pg.sprite.spritecollide(S1,rain_group,dokill=False):
+    if pg.sprite.spritecollideany(S1,rain_group):
+        all_sprites.remove(S1)
         collision_time = pg.time.get_ticks()
         paused = True
     if paused:
-            S1.image.fill((255,0,0,0))
-
+            S2.rect = last_pos
             S2.explosion()
             screen.blit(S2.image,S2.rect)
-            if pg.time.get_ticks()-collision_time >= 2000:
-                paused = False
             pg.display.flip()
             clock.tick(30)
