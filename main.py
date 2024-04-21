@@ -37,7 +37,7 @@ win_fontRect.center = ((W//2 , H//2))
 
 # For time Table
 start_time = datetime.datetime.now().replace(hour=0, minute=14, second=0, microsecond=0)
-end_time = start_time.replace(minute=14,second=30)
+end_time = start_time.replace(minute=14,second=2)
 
 
 rain_group = pg.sprite.Group()
@@ -197,7 +197,17 @@ while running:
             start_time +=datetime.timedelta(seconds=1)
             if start_time > end_time:
                 #music of win
-                time.sleep(0.5)
+                running = False
+            
+            # Displaying win 
+                screen.fill((0,0,0))
+                screen.blit(win_font_text, win_fontRect)
+                pg.display.update()
+                time_since_win_displayed +=1
+                if time_since_win_displayed >= 120:
+                    time.sleep(2)
+                    pg.quit()
+                    sys.exit()
 
                 screen.fill((0,0,0))
                 screen.blit(win_font_text,(W//2,H//2))
@@ -260,5 +270,6 @@ while running:
             S2.rect = last_pos
             S2.explosion()
             screen.blit(S2.image,S2.rect)
+            screen.blit(game_over_text,game_overRect)
             pg.display.flip()
             clock.tick(FPS)
