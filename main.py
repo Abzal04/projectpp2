@@ -1,28 +1,34 @@
 import pygame as pg
 import random,datetime,sys,time
 pg.init()
+pg.mixer.init()
 
 W=1000
 H=750
-x,y=W//2,H-200
+x,y=W//2-200,H-220
 running = True
 
 screen=pg.display.set_mode((W,H))
-pg.display.set_caption("Rain")
+pg.display.set_caption("Laptop Lifeguard")
 
 clock=pg.time.Clock()
 FPS=60
 counter_for_FPS = 0
 time_since_win_displayed = 0
 
-
+# Images
 student_img = pg.image.load("design/studentwlaptop-frame-0 (1).png")
-student_back_image=pg.image.load("design/backsprite.png")
-umbrella_img=pg.transform.rotate(pg.transform.scale(pg.image.load("design/umbrella1.png"),(150,150)),30)
-umbrella_rect=umbrella_img.get_rect()
+student_back_image = pg.image.load("design/backsprite.png")
+umbrella_img = pg.transform.rotate(pg.transform.scale(pg.image.load("design/umbrella1.png"), (150, 150)), 30)
+umbrella_rect = umbrella_img.get_rect()
 raindrop_img = pg.image.load("design/raindrop.png")
-bg=pg.image.load("design/background final.png")
+bg = pg.image.load("design/background final.png")
 
+# Sounds
+game_sound = pg.mixer.Sound("music/game_sound.mp3")
+exploision_sound= pg.mixer.Sound("music/laptop_sound.mp3")
+win_sound = pg.mixer.Sound("music/win_sound.mp3")
+umbrella_sound = pg.mixer.Sound("music/umbrella.mp3")
 # Game Over Screen
 game_over_font = pg.font.SysFont("comicsansms",60)
 game_over_text = game_over_font.render("Game Over",True,(255,255,255))
@@ -30,14 +36,17 @@ game_overRect = game_over_text.get_rect()
 game_overRect.center = ((W//2,H//2))
 
 # Win Screen
-win_font = pg.font.SysFont("comicsansms",60)
-win_font_text = win_font.render("You won !!!",True,(255,255,255))
-win_fontRect = win_font_text.get_rect()
-win_fontRect.center = ((W//2 , H//2))
+win_font = pg.font.SysFont("comicsansms", 60)
+win_font_text1 = win_font.render("Congratulations,", True, (255, 255, 255))
+win_font_text2 = win_font.render("You saved Macbook!!!",True, (255,255,255))
+win_fontRect1 = win_font_text1.get_rect()
+win_fontRect1.center = ((W // 2, H // 2-100))
+win_fontRect2 = win_font_text2.get_rect()
+win_fontRect2.center = ((W // 2, H // 2))
 
 # For time Table
 start_time = datetime.datetime.now().replace(hour=0, minute=14, second=0, microsecond=0)
-end_time = start_time.replace(minute=14,second=2)
+end_time = start_time.replace(minute=14,second=30)
 
 
 rain_group = pg.sprite.Group()
@@ -188,6 +197,7 @@ while running:
 
     if not paused:                                                                              ###########
         screen.blit(bg,(0,0))
+        game_sound.play(-1)
 
         time_table_font = pg.font.SysFont("comicsansms",60)
             # print(current_time.strftime("%M:%S"))
@@ -196,26 +206,8 @@ while running:
             counter_for_FPS = 0
             start_time +=datetime.timedelta(seconds=1)
             if start_time > end_time:
-                #music of win
+                win_sound.play()
                 running = False
-            
-            # Displaying win 
-                screen.fill((0,0,0))
-                screen.blit(win_font_text, win_fontRect)
-                pg.display.update()
-                time_since_win_displayed +=1
-                if time_since_win_displayed >= 120:
-                    time.sleep(2)
-                    pg.quit()
-                    sys.exit()
-
-                screen.fill((0,0,0))
-                screen.blit(win_font_text,(W//2,H//2))
-                pg.display.update()
-                time_since_win_displayed +=1
-                if time_since_win_displayed >= 120:
-                    time.sleep(2)
-                    running = False
 
         time_table_text = time_table_font.render(f"{start_time: %M:%S}", True, (255,0,0))
         time_tableRect = time_table_text.get_rect()
@@ -243,17 +235,17 @@ while running:
 
         #Collision of umbrella with raindrops
         collided_rain = pg.sprite.spritecollide(U1,rain_group,dokill=False)
-        for raindrop in collided_rain:
-            rain_group.remove(raindrop)
+        if collided_rain:
+            umbrella_sound.play()
+            for raindrop in collided_rain:
+                rain_group.remove(raindrop)
         
-
         for entity in all_sprites:
             screen.blit(entity.image,entity.rect)
             entity.move()
 
         last_pos = (S1.rect.x,S1.rect.y)
         
-    
         pg.display.flip()
         clock.tick(60)
     #Collision of student with raindrop
@@ -269,7 +261,21 @@ while running:
     if paused:
             S2.rect = last_pos
             S2.explosion()
+            game_sound.stop()
+            exploision_sound.play()
             screen.blit(S2.image,S2.rect)
             screen.blit(game_over_text,game_overRect)
             pg.display.flip()
             clock.tick(FPS)
+# Displaying win
+screen.fill((0, 0, 0))
+game_sound.stop()
+win_sound.play()
+screen.blit(win_font_text1, win_fontRect1)
+screen.blit(win_font_text2, win_fontRect2)
+student_imgg= pg.transform.scale(student_img,(200,200))
+screen.blit(student_imgg,(W//2,H//2+100))
+pg.display.flip()
+time.sleep(3)
+pg.quit()
+sys.exit()
