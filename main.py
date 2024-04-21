@@ -5,11 +5,16 @@ pg.init()
 W=1000
 H=750
 x,y=W//2,H-200
+running = True
 
 screen=pg.display.set_mode((W,H))
 pg.display.set_caption("Rain")
 
 clock=pg.time.Clock()
+FPS=60
+counter_for_FPS = 0
+time_since_win_displayed = 0
+
 
 student_img = pg.image.load("design/studentwlaptop-frame-0 (1).png")
 student_back_image=pg.image.load("design/backsprite.png")
@@ -32,10 +37,7 @@ win_fontRect.center = ((W//2 , H//2))
 
 # For time Table
 start_time = datetime.datetime.now().replace(hour=0, minute=14, second=0, microsecond=0)
-end_time = start_time.replace(minute=15)
-current_time = start_time
-
-
+end_time = start_time.replace(minute=14,second=30)
 
 
 rain_group = pg.sprite.Group()
@@ -178,18 +180,37 @@ class Student(pg.sprite.Sprite):
 S1=Student()
 S2=Student()
 
-while True:
+while running:
     for event in pg.event.get():
         if event.type==pg.QUIT:
             pg.quit()
             sys.exit()
-    screen.blit(bg,(0,0))
 
     if not paused:                                                                              ###########
-        while start_time <= end_time:
+        screen.blit(bg,(0,0))
+
+        time_table_font = pg.font.SysFont("comicsansms",60)
             # print(current_time.strftime("%M:%S"))
+        counter_for_FPS+=1
+        if counter_for_FPS >= FPS:
+            counter_for_FPS = 0
             start_time +=datetime.timedelta(seconds=1)
-        time_rect = pg.draw.rect(screen, (0,0,0), pg.Rect(W-300,30,200,100))
+            if start_time > end_time:
+                #music of win
+                time.sleep(0.5)
+
+                screen.fill((0,0,0))
+                screen.blit(win_font_text,(W//2,H//2))
+                pg.display.update()
+                time_since_win_displayed +=1
+                if time_since_win_displayed >= 120:
+                    time.sleep(2)
+                    running = False
+
+        time_table_text = time_table_font.render(f"{start_time: %M:%S}", True, (255,0,0))
+        time_tableRect = time_table_text.get_rect()
+        time_tableRect.center = ((W-150,80))
+        screen.blit(time_table_text,time_tableRect)
         
         mouse_x,mouse_y = pg.mouse.get_pos()
         U1=Umbrella()
@@ -214,18 +235,25 @@ while True:
         collided_rain = pg.sprite.spritecollide(U1,rain_group,dokill=False)
         for raindrop in collided_rain:
             rain_group.remove(raindrop)
+        
 
         for entity in all_sprites:
             screen.blit(entity.image,entity.rect)
             entity.move()
 
         last_pos = (S1.rect.x,S1.rect.y)
+        
     
         pg.display.flip()
         clock.tick(60)
     #Collision of student with raindrop
     if pg.sprite.spritecollideany(S1,rain_group):
-        all_sprites.remove(S1)
+        
+        for all in rain_group:
+            all.kill()
+        for all in all_sprites:
+            all.kill()
+            
         collision_time = pg.time.get_ticks()
         paused = True
     if paused:
@@ -233,4 +261,4 @@ while True:
             S2.explosion()
             screen.blit(S2.image,S2.rect)
             pg.display.flip()
-            clock.tick(30)
+            clock.tick(FPS)
